@@ -32,6 +32,26 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux" AND NOT MINIMAL_BUILD)
   option(BUILD_FALCO_MODERN_BPF "Build modern BPF support for Falco" OFF)
   if(BUILD_FALCO_MODERN_BPF)
     add_definitions(-DHAS_MODERN_BPF)
+
+    # Allow to build also the container with the modern bpf probe
+    set(MODERN_BPF_CONTEXT ${CMAKE_BINARY_DIR}/docker/modern_bpf)
+
+    # This context prepare the Falco artifact to push into the docker
+    add_custom_target(modern-bpf-context
+      COMMAND mkdir -p ${MODERN_BPF_CONTEXT}
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/userspace/falco/falco ${MODERN_BPF_CONTEXT}
+      # here probably we need to copy something else: rules and config for example
+      DEPENDS falco
+    )
+
+    add_custom_target(falco-modern-bpf-container
+      COMMAND docker build
+        --tag falco-modern-bpf:latest
+        -f ${CMAKE_SOURCE_DIR}/docker/modern-bpf/local.Dockerfile
+        ${MODERN_BPF_CONTEXT}
+      DEPENDS modern-bpf-context
+    )
+
   endif()
 endif()
 
