@@ -4,8 +4,8 @@ COPY ./falco.tar.gz /
 
 WORKDIR /
 
-RUN tar -xvf falco.tar.gz; \
-    mv falco-0.32.1-276+3c74764-$(uname -m) falco; \
+RUN mkdir falco; \
+    tar -xzf falco.tar.gz -C falco --strip-component 1 \
     rm -rf /falco/usr/src/falco-*; \
     rm /falco/usr/bin/falco-driver-loader
 
