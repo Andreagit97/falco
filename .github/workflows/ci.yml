@@ -104,80 +104,83 @@ jobs:
   #         make tests
   #         popd
 
-  build-ubuntu-bionic:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  # build-ubuntu-bionic:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Update base image
-        run: sudo apt update -y
+  #     - name: Update base image
+  #       run: sudo apt update -y
 
-      - name: Install build dependencies
-        run: sudo DEBIAN_FRONTEND=noninteractive apt install cmake build-essential clang llvm git linux-headers-$(uname -r) pkg-config autoconf libtool libelf-dev -y
+  #     - name: Install build dependencies
+  #       run: sudo DEBIAN_FRONTEND=noninteractive apt install cmake build-essential clang llvm git linux-headers-$(uname -r) pkg-config autoconf libtool libelf-dev -y
 
-      - name: Prepare project
-        run: |
-          mkdir build
-          pushd build
-          cmake -DBUILD_BPF=On -DUSE_BUNDLED_DEPS=On ..
-          popd
+  #     - name: Prepare project
+  #       run: |
+  #         mkdir build
+  #         pushd build
+  #         cmake -DBUILD_BPF=On -DUSE_BUNDLED_DEPS=On ..
+  #         popd
 
-      - name: Build
-        run: |
-          pushd build
-          KERNELDIR=/lib/modules/$(uname -r)/build make -j4 all
-          popd
+  #     - name: Build
+  #       run: |
+  #         pushd build
+  #         KERNELDIR=/lib/modules/$(uname -r)/build make -j4 all
+  #         popd
 
-      - name: Run unit tests
-        run: |
-          pushd build
-          make tests
-          popd
+  #     - name: Run unit tests
+  #       run: |
+  #         pushd build
+  #         make tests
+  #         popd
 
-  build-centos7-debug:
-    runs-on: ubuntu-latest
-    container:
-      image: falcosecurity/falco-builder:latest
-      env:
-        BUILD_TYPE: "debug"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          path: falco
+  # build-centos7-debug:
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: falcosecurity/falco-builder:latest
+  #     env:
+  #       BUILD_TYPE: "debug"
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #         path: falco
 
-      - name: Link falco repo to /source/falco
-        run: |
-          mkdir -p /source
-          ln -s "$GITHUB_WORKSPACE/falco" /source/falco
+  #     - name: Link falco repo to /source/falco
+  #       run: |
+  #         mkdir -p /source
+  #         ln -s "$GITHUB_WORKSPACE/falco" /source/falco
   
-      - name: Prepare project
-        run: /usr/bin/entrypoint cmake
+  #     - name: Prepare project
+  #       run: /usr/bin/entrypoint cmake
 
-      - name: Build
-        run: /usr/bin/entrypoint all
+  #     - name: Build
+  #       run: /usr/bin/entrypoint all
 
-      - name: Run unit tests
-        run: /usr/bin/entrypoint tests
+  #     - name: Run unit tests
+  #       run: /usr/bin/entrypoint tests
 
-      - name: Build packages
-        run: /usr/bin/entrypoint package
+  #     - name: Build packages
+  #       run: /usr/bin/entrypoint package
+
 
   build-modern-bpf-packages:
     runs-on: ubuntu-22.04
-    container:
-      image: andreater/falco-modern-builder:latest
     steps:
 
       - name: Checkout Falco 🦅
-        uses: actions/checkout@v3
+        uses: Andreagit97/checkout@v3
         with:
           fetch-depth: 0
-          path: falco
+
+      - name: Install deps ⛓️
+        run: |
+          sudo apt update
+          sudo apt install -y --no-install-recommends ca-certificates cmake build-essential git clang-14 llvm-14 linux-headers-$(uname -r) m4 rpm
 
       - name: Build Artifacts (rpm, tar, deb) 🏗️
         run: |
@@ -185,20 +188,20 @@ jobs:
           cd build && cmake -DUSE_BUNDLED_DEPS=On -DCREATE_TEST_TARGETS=Off -DFALCO_ETC_DIR=/etc -DBUILD_FALCO_MODERN_BPF=ON ..
           make package
 
-      - name: Upload deb
-        uses: actions/upload-artifact@v3
-        with:
-          name: falco-modern.deb
-          path: ./build/falco-*.deb
+      # - name: Upload deb
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: falco-modern.deb
+      #     path: ./build/falco-*.deb
 
-      - name: Upload rpm
-        uses: actions/upload-artifact@v3
-        with:
-          name: falco-modern.rpm
-          path: ./build/falco-*.rpm
+      # - name: Upload rpm
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: falco-modern.rpm
+      #     path: ./build/falco-*.rpm
 
-      - name: Upload tar.gz
-        uses: actions/upload-artifact@v3
-        with:
-          name: falco-modern.tar.gz
-          path: ./build/falco-*.tar.gz
+      # - name: Upload tar.gz
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: falco-modern.tar.gz
+      #     path: ./build/falco-*.tar.gz
