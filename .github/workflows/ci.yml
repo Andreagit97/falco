@@ -1,110 +1,108 @@
 name: CI Build
 on:
   pull_request:
-    branches: [master]
   push:
-    branches: [master]
   workflow_dispatch:
 
 jobs:
-  build-minimal:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  # build-minimal:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Update base image
-        run: sudo apt update -y
+  #     - name: Update base image
+  #       run: sudo apt update -y
 
-      - name: Install build dependencies
-        run: sudo DEBIAN_FRONTEND=noninteractive apt install libjq-dev libyaml-cpp-dev libelf-dev cmake build-essential git -y
+  #     - name: Install build dependencies
+  #       run: sudo DEBIAN_FRONTEND=noninteractive apt install libjq-dev libyaml-cpp-dev libelf-dev cmake build-essential git -y
 
-      - name: Prepare project
-        run: |
-          mkdir build-minimal
-          pushd build-minimal
-          cmake -DMINIMAL_BUILD=On -DBUILD_BPF=Off -DBUILD_DRIVER=Off -DCMAKE_BUILD_TYPE=Release ..
-          popd
+  #     - name: Prepare project
+  #       run: |
+  #         mkdir build-minimal
+  #         pushd build-minimal
+  #         cmake -DMINIMAL_BUILD=On -DBUILD_BPF=Off -DBUILD_DRIVER=Off -DCMAKE_BUILD_TYPE=Release ..
+  #         popd
 
-      - name: Build
-        run: |
-          pushd build-minimal
-          make -j4 all
-          popd
+  #     - name: Build
+  #       run: |
+  #         pushd build-minimal
+  #         make -j4 all
+  #         popd
 
-      - name: Run unit tests
-        run: |
-          pushd build-minimal
-          make tests
-          popd
+  #     - name: Run unit tests
+  #       run: |
+  #         pushd build-minimal
+  #         make tests
+  #         popd
 
-  build-ubuntu-focal:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  # build-ubuntu-focal:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Update base image
-        run: sudo apt update -y
+  #     - name: Update base image
+  #       run: sudo apt update -y
 
-      - name: Install build dependencies
-        run: sudo DEBIAN_FRONTEND=noninteractive apt install libssl-dev libyaml-dev libc-ares-dev libprotobuf-dev protobuf-compiler libjq-dev libyaml-cpp-dev libgrpc++-dev protobuf-compiler-grpc rpm libelf-dev cmake build-essential libcurl4-openssl-dev linux-headers-$(uname -r) clang llvm git -y
+  #     - name: Install build dependencies
+  #       run: sudo DEBIAN_FRONTEND=noninteractive apt install libssl-dev libyaml-dev libc-ares-dev libprotobuf-dev protobuf-compiler libjq-dev libyaml-cpp-dev libgrpc++-dev protobuf-compiler-grpc rpm libelf-dev cmake build-essential libcurl4-openssl-dev linux-headers-$(uname -r) clang llvm git -y
 
-      - name: Prepare project
-        run: |
-          mkdir build
-          pushd build
-          cmake -DBUILD_BPF=On ..
-          popd
+  #     - name: Prepare project
+  #       run: |
+  #         mkdir build
+  #         pushd build
+  #         cmake -DBUILD_BPF=On ..
+  #         popd
 
-      - name: Build
-        run: |
-          pushd build
-          KERNELDIR=/lib/modules/$(uname -r)/build make -j4 all
-          popd
+  #     - name: Build
+  #       run: |
+  #         pushd build
+  #         KERNELDIR=/lib/modules/$(uname -r)/build make -j4 all
+  #         popd
 
-      - name: Run unit tests
-        run: |
-          pushd build
-          make tests
-          popd
+  #     - name: Run unit tests
+  #       run: |
+  #         pushd build
+  #         make tests
+  #         popd
 
-  build-ubuntu-focal-debug:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  # build-ubuntu-focal-debug:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Update base image
-        run: sudo apt update -y
+  #     - name: Update base image
+  #       run: sudo apt update -y
 
-      - name: Install build dependencies
-        run: sudo DEBIAN_FRONTEND=noninteractive apt install libssl-dev libyaml-dev libc-ares-dev libprotobuf-dev protobuf-compiler libjq-dev libyaml-cpp-dev libgrpc++-dev protobuf-compiler-grpc rpm libelf-dev cmake build-essential libcurl4-openssl-dev linux-headers-$(uname -r) clang llvm git -y
+  #     - name: Install build dependencies
+  #       run: sudo DEBIAN_FRONTEND=noninteractive apt install libssl-dev libyaml-dev libc-ares-dev libprotobuf-dev protobuf-compiler libjq-dev libyaml-cpp-dev libgrpc++-dev protobuf-compiler-grpc rpm libelf-dev cmake build-essential libcurl4-openssl-dev linux-headers-$(uname -r) clang llvm git -y
 
-      - name: Prepare project
-        run: |
-          mkdir build
-          pushd build
-          cmake -DCMAKE_BUILD_TYPE=debug -DBUILD_BPF=On ..
-          popd
+  #     - name: Prepare project
+  #       run: |
+  #         mkdir build
+  #         pushd build
+  #         cmake -DCMAKE_BUILD_TYPE=debug -DBUILD_BPF=On ..
+  #         popd
 
-      - name: Build
-        run: |
-          pushd build
-          KERNELDIR=/lib/modules/$(uname -r)/build make -j4 all
-          popd
+  #     - name: Build
+  #       run: |
+  #         pushd build
+  #         KERNELDIR=/lib/modules/$(uname -r)/build make -j4 all
+  #         popd
 
-      - name: Run unit tests
-        run: |
-          pushd build
-          make tests
-          popd
+  #     - name: Run unit tests
+  #       run: |
+  #         pushd build
+  #         make tests
+  #         popd
 
   build-ubuntu-bionic:
     runs-on: ubuntu-18.04
@@ -168,3 +166,39 @@ jobs:
 
       - name: Build packages
         run: /usr/bin/entrypoint package
+
+  build-modern-bpf-packages:
+    runs-on: ubuntu-22.04
+    container:
+      image: andreater/falco-modern-builder:latest
+    steps:
+
+      - name: Checkout Falco 🦅
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          path: falco
+
+      - name: Build Artifacts (rpm, tar, deb) 🏗️
+        run: |
+          mkdir -p build
+          cd build && cmake -DUSE_BUNDLED_DEPS=On -DCREATE_TEST_TARGETS=Off -DFALCO_ETC_DIR=/etc -DBUILD_FALCO_MODERN_BPF=ON ..
+          make package
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v3
+        with:
+          name: falco-modern.deb
+          path: ./build/falco-*.deb
+
+      - name: Upload rpm
+        uses: actions/upload-artifact@v3
+        with:
+          name: falco-modern.rpm
+          path: ./build/falco-*.rpm
+
+      - name: Upload tar.gz
+        uses: actions/upload-artifact@v3
+        with:
+          name: falco-modern.tar.gz
+          path: ./build/falco-*.tar.gz
