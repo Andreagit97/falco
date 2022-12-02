@@ -144,9 +144,9 @@ private:
 				{
 					if (i > 0 && nodeKey.empty() && key[i - 1] != '.')
 					{
-						throw runtime_error(
+						throw std::runtime_error(
 							"Parsing error: expected '.' character at pos " 
-							+ to_string(i - 1));
+							+ std::to_string(i - 1));
 					}
 					nodeKey += c;
 				}
@@ -155,9 +155,9 @@ private:
 				{
 					if (nodeKey.empty())
 					{
-						throw runtime_error(
+						throw std::runtime_error(
 							"Parsing error: unexpected character at pos " 
-							+ to_string(i));
+							+ std::to_string(i));
 					}
 					ret.reset(ret[nodeKey]);
 					nodeKey.clear();
@@ -177,7 +177,7 @@ private:
 		}
 		catch(const std::exception& e)
 		{
-			throw runtime_error("Config error at key \"" + key + "\": " + string(e.what()));
+			throw std::runtime_error("Config error at key \"" + key + "\": " + std::string(e.what()));
 		}
 	}
 	
@@ -219,7 +219,7 @@ public:
 	void init(const std::string& conf_filename, const std::vector<std::string>& cmdline_options);
 	void init(const std::vector<std::string>& cmdline_options);
 
-	static void read_rules_file_directory(const string& path, list<string>& rules_filenames, list<string> &rules_folders);
+	static void read_rules_file_directory(const std::string& path, std::list<std::string>& rules_filenames, std::list<std::string> &rules_folders);
 
 	// Rules list as passed by the user
 	std::list<std::string> m_rules_filenames;
@@ -374,7 +374,7 @@ namespace YAML {
 			if(!rhs.m_library_path.empty() && rhs.m_library_path.at(0) != '/')
 			{
 				// prepend share dir if path is not absolute
-				rhs.m_library_path = string(FALCO_ENGINE_PLUGINS_DIR) + rhs.m_library_path;
+				rhs.m_library_path = std::string(FALCO_ENGINE_PLUGINS_DIR) + rhs.m_library_path;
 			}
 
 			if(node["init_config"] && !node["init_config"].IsNull())
@@ -400,7 +400,7 @@ namespace YAML {
 
 			if(node["open_params"] && !node["open_params"].IsNull())
 			{
-				string open_params = node["open_params"].as<std::string>();
+				std::string open_params = node["open_params"].as<std::string>();
 				rhs.m_open_params = trim(open_params);
 			}
 
