@@ -29,8 +29,6 @@ limitations under the License.
 #include "logger.h"
 #include "banned.h" // This raises a compilation error when certain functions are used
 
-using namespace std;
-
 falco_configuration::falco_configuration():
 	m_json_output(false),
 	m_json_include_output_property(true),
@@ -69,9 +67,9 @@ falco_configuration::~falco_configuration()
 	}
 }
 
-void falco_configuration::init(const string& conf_filename, const vector<string> &cmdline_options)
+void falco_configuration::init(const std::string& conf_filename, const std::vector<std::string> &cmdline_options)
 {
-	string m_config_file = conf_filename;
+	std::string m_config_file = conf_filename;
 	m_config = new yaml_configuration();
 	try
 	{
@@ -85,9 +83,9 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 
 	init_cmdline_options(cmdline_options);
 
-	list<string> rules_files;
+	std::list<std::string> rules_files;
 
-	m_config->get_sequence<list<string>>(rules_files, string("rules_file"));
+	m_config->get_sequence<std::list<std::string>>(rules_files, std::string("rules_file"));
 
 	for(auto &file : rules_files)
 	{
@@ -107,15 +105,15 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 	file_output.name = "file";
 	if(m_config->get_scalar<bool>("file_output.enabled", false))
 	{
-		string filename, keep_alive;
-		filename = m_config->get_scalar<string>("file_output.filename", "");
-		if(filename == string(""))
+		std::string filename, keep_alive;
+		filename = m_config->get_scalar<std::string>("file_output.filename", "");
+		if(filename == std::string(""))
 		{
-			throw logic_error("Error reading config file (" + m_config_file + "): file output enabled but no filename in configuration block");
+			throw std::logic_error("Error reading config file (" + m_config_file + "): file output enabled but no filename in configuration block");
 		}
 		file_output.options["filename"] = filename;
 
-		keep_alive = m_config->get_scalar<string>("file_output.keep_alive", "");
+		keep_alive = m_config->get_scalar<std::string>("file_output.keep_alive", "");
 		file_output.options["keep_alive"] = keep_alive;
 
 		m_outputs.push_back(file_output);
@@ -139,15 +137,15 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 	program_output.name = "program";
 	if(m_config->get_scalar<bool>("program_output.enabled", false))
 	{
-		string program, keep_alive;
-		program = m_config->get_scalar<string>("program_output.program", "");
-		if(program == string(""))
+		std::string program, keep_alive;
+		program = m_config->get_scalar<std::string>("program_output.program", "");
+		if(program == std::string(""))
 		{
-			throw logic_error("Error reading config file (" + m_config_file + "): program output enabled but no program in configuration block");
+			throw std::logic_error("Error reading config file (" + m_config_file + "): program output enabled but no program in configuration block");
 		}
 		program_output.options["program"] = program;
 
-		keep_alive = m_config->get_scalar<string>("program_output.keep_alive", "");
+		keep_alive = m_config->get_scalar<std::string>("program_output.keep_alive", "");
 		program_output.options["keep_alive"] = keep_alive;
 
 		m_outputs.push_back(program_output);
@@ -157,33 +155,33 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 	http_output.name = "http";
 	if(m_config->get_scalar<bool>("http_output.enabled", false))
 	{
-		string url;
-		url = m_config->get_scalar<string>("http_output.url", "");
+		std::string url;
+		url = m_config->get_scalar<std::string>("http_output.url", "");
 
-		if(url == string(""))
+		if(url == std::string(""))
 		{
-			throw logic_error("Error reading config file (" + m_config_file + "): http output enabled but no url in configuration block");
+			throw std::logic_error("Error reading config file (" + m_config_file + "): http output enabled but no url in configuration block");
 		}
 		http_output.options["url"] = url;
 
-		string user_agent;
-		user_agent = m_config->get_scalar<string>("http_output.user_agent","falcosecurity/falco");
+		std::string user_agent;
+		user_agent = m_config->get_scalar<std::string>("http_output.user_agent","falcosecurity/falco");
 		http_output.options["user_agent"] = user_agent;
 
 		m_outputs.push_back(http_output);
 	}
 
 	m_grpc_enabled = m_config->get_scalar<bool>("grpc.enabled", false);
-	m_grpc_bind_address = m_config->get_scalar<string>("grpc.bind_address", "0.0.0.0:5060");
+	m_grpc_bind_address = m_config->get_scalar<std::string>("grpc.bind_address", "0.0.0.0:5060");
 	m_grpc_threadiness = m_config->get_scalar<uint32_t>("grpc.threadiness", 0);
 	if(m_grpc_threadiness == 0)
 	{
 		m_grpc_threadiness = falco::utils::hardware_concurrency();
 	}
 	// todo > else limit threadiness to avoid oversubscription?
-	m_grpc_private_key = m_config->get_scalar<string>("grpc.private_key", "/etc/falco/certs/server.key");
-	m_grpc_cert_chain = m_config->get_scalar<string>("grpc.cert_chain", "/etc/falco/certs/server.crt");
-	m_grpc_root_certs = m_config->get_scalar<string>("grpc.root_certs", "/etc/falco/certs/ca.crt");
+	m_grpc_private_key = m_config->get_scalar<std::string>("grpc.private_key", "/etc/falco/certs/server.key");
+	m_grpc_cert_chain = m_config->get_scalar<std::string>("grpc.cert_chain", "/etc/falco/certs/server.crt");
+	m_grpc_root_certs = m_config->get_scalar<std::string>("grpc.root_certs", "/etc/falco/certs/ca.crt");
 
 	falco::outputs::config grpc_output;
 	grpc_output.name = "grpc";
@@ -195,10 +193,10 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 
 	if(m_outputs.size() == 0)
 	{
-		throw logic_error("Error reading config file (" + m_config_file + "): No outputs configured. Please configure at least one output file output enabled but no filename in configuration block");
+		throw std::logic_error("Error reading config file (" + m_config_file + "): No outputs configured. Please configure at least one output file output enabled but no filename in configuration block");
 	}
 
-	m_log_level = m_config->get_scalar<string>("log_level", "info");
+	m_log_level = m_config->get_scalar<std::string>("log_level", "info");
 
 	falco_logger::set_level(m_log_level);
 
@@ -213,10 +211,10 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 	m_notifications_rate = m_config->get_scalar<uint32_t>("outputs.rate", 0);
 	m_notifications_max_burst = m_config->get_scalar<uint32_t>("outputs.max_burst", 1000);
 
-	string priority = m_config->get_scalar<string>("priority", "debug");
+	std::string priority = m_config->get_scalar<std::string>("priority", "debug");
 	if (!falco_common::parse_priority(priority, m_min_priority))
 	{
-		throw logic_error("Unknown priority \"" + priority + "\"--must be one of emergency, alert, critical, error, warning, notice, informational, debug");
+		throw std::logic_error("Unknown priority \"" + priority + "\"--must be one of emergency, alert, critical, error, warning, notice, informational, debug");
 	}
 
 	m_buffered_outputs = m_config->get_scalar<bool>("buffered_outputs", false);
@@ -228,15 +226,15 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 	m_webserver_enabled = m_config->get_scalar<bool>("webserver.enabled", false);
 	m_webserver_threadiness = m_config->get_scalar<uint32_t>("webserver.threadiness", 0);
 	m_webserver_listen_port = m_config->get_scalar<uint32_t>("webserver.listen_port", 8765);
-	m_webserver_k8s_healthz_endpoint = m_config->get_scalar<string>("webserver.k8s_healthz_endpoint", "/healthz");
+	m_webserver_k8s_healthz_endpoint = m_config->get_scalar<std::string>("webserver.k8s_healthz_endpoint", "/healthz");
 	m_webserver_ssl_enabled = m_config->get_scalar<bool>("webserver.ssl_enabled", false);
-	m_webserver_ssl_certificate = m_config->get_scalar<string>("webserver.ssl_certificate", "/etc/falco/falco.pem");
+	m_webserver_ssl_certificate = m_config->get_scalar<std::string>("webserver.ssl_certificate", "/etc/falco/falco.pem");
 	if(m_webserver_threadiness == 0)
 	{
 		m_webserver_threadiness = falco::utils::hardware_concurrency();
 	}
 
-	std::list<string> syscall_event_drop_acts;
+	std::list<std::string> syscall_event_drop_acts;
 	m_config->get_sequence(syscall_event_drop_acts, "syscall_event_drops.actions");
 
 	for(std::string &act : syscall_event_drop_acts)
@@ -249,7 +247,7 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 		{
 			if(m_syscall_evt_drop_actions.count(syscall_evt_drop_action::IGNORE))
 			{
-				throw logic_error("Error reading config file (" + m_config_file + "): syscall event drop action \"" + act + "\" does not make sense with the \"ignore\" action");
+				throw std::logic_error("Error reading config file (" + m_config_file + "): syscall event drop action \"" + act + "\" does not make sense with the \"ignore\" action");
 			}
 			m_syscall_evt_drop_actions.insert(syscall_evt_drop_action::LOG);
 		}
@@ -257,7 +255,7 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 		{
 			if(m_syscall_evt_drop_actions.count(syscall_evt_drop_action::IGNORE))
 			{
-				throw logic_error("Error reading config file (" + m_config_file + "): syscall event drop action \"" + act + "\" does not make sense with the \"ignore\" action");
+				throw std::logic_error("Error reading config file (" + m_config_file + "): syscall event drop action \"" + act + "\" does not make sense with the \"ignore\" action");
 			}
 			m_syscall_evt_drop_actions.insert(syscall_evt_drop_action::ALERT);
 		}
@@ -267,7 +265,7 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 		}
 		else
 		{
-			throw logic_error("Error reading config file (" + m_config_file + "): available actions for syscall event drops are \"ignore\", \"log\", \"alert\", and \"exit\"");
+			throw std::logic_error("Error reading config file (" + m_config_file + "): available actions for syscall event drops are \"ignore\", \"log\", \"alert\", and \"exit\"");
 		}
 	}
 
@@ -279,7 +277,7 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 	m_syscall_evt_drop_threshold = m_config->get_scalar<double>("syscall_event_drops.threshold", .1);
 	if(m_syscall_evt_drop_threshold < 0 || m_syscall_evt_drop_threshold > 1)
 	{
-		throw logic_error("Error reading config file (" + m_config_file + "): syscall event drops threshold must be a double in the range [0, 1]");
+		throw std::logic_error("Error reading config file (" + m_config_file + "): syscall event drops threshold must be a double in the range [0, 1]");
 	}
 	m_syscall_evt_drop_rate = m_config->get_scalar<double>("syscall_event_drops.rate", .03333);
 	m_syscall_evt_drop_max_burst = m_config->get_scalar<double>("syscall_event_drops.max_burst", 1);
@@ -288,19 +286,19 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 	m_syscall_evt_timeout_max_consecutives = m_config->get_scalar<uint32_t>("syscall_event_timeouts.max_consecutives", 1000);
 	if(m_syscall_evt_timeout_max_consecutives == 0)
 	{
-		throw logic_error("Error reading config file(" + m_config_file + "): the maximum consecutive timeouts without an event must be an unsigned integer > 0");
+		throw std::logic_error("Error reading config file(" + m_config_file + "): the maximum consecutive timeouts without an event must be an unsigned integer > 0");
 	}
 
 	m_metadata_download_max_mb = m_config->get_scalar<uint32_t>("metadata_download.max_mb", 100);
 	if(m_metadata_download_max_mb > 1024)
 	{
-		throw logic_error("Error reading config file(" + m_config_file + "): metadata download maximum size should be < 1024 Mb");
+		throw std::logic_error("Error reading config file(" + m_config_file + "): metadata download maximum size should be < 1024 Mb");
 	}
 	m_metadata_download_chunk_wait_us = m_config->get_scalar<uint32_t>("metadata_download.chunk_wait_us", 1000);
 	m_metadata_download_watch_freq_sec = m_config->get_scalar<uint32_t>("metadata_download.watch_freq_sec", 1);
 	if(m_metadata_download_watch_freq_sec == 0)
 	{
-		throw logic_error("Error reading config file(" + m_config_file + "): metadata download watch frequency seconds must be an unsigned integer > 0");
+		throw std::logic_error("Error reading config file(" + m_config_file + "): metadata download watch frequency seconds must be an unsigned integer > 0");
 	}
 
 	/* We put this value in the configuration file because in this way we can change the dimension at every reload.
@@ -312,17 +310,17 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 
 	bool load_plugins_node_defined = m_config->is_defined("load_plugins");
 
-	m_config->get_sequence<set<string>>(load_plugins, "load_plugins");
+	m_config->get_sequence<std::set<std::string>>(load_plugins, "load_plugins");
 
 	std::list<falco_configuration::plugin_config> plugins;
 	try
 	{
-		m_config->get_sequence<std::list<falco_configuration::plugin_config>>(plugins, string("plugins"));
+		m_config->get_sequence<std::list<falco_configuration::plugin_config>>(plugins, std::string("plugins"));
 	}
-	catch (exception &e)
+	catch (std::exception &e)
 	{
 		// Might be thrown due to not being able to open files
-		throw logic_error("Error reading config file(" + m_config_file + "): could not load plugins config: " + e.what());
+		throw std::logic_error("Error reading config file(" + m_config_file + "): could not load plugins config: " + e.what());
 	}
 
 	// If load_plugins was specified, only save plugins matching those in values
@@ -340,7 +338,7 @@ void falco_configuration::init(const string& conf_filename, const vector<string>
 	m_watch_config_files = m_config->get_scalar<bool>("watch_config_files", true);
 }
 
-void falco_configuration::read_rules_file_directory(const string &path, list<string> &rules_filenames, list<string> &rules_folders)
+void falco_configuration::read_rules_file_directory(const std::string &path, std::list<std::string> &rules_filenames, std::list<std::string> &rules_folders)
 {
 	struct stat st;
 
@@ -359,7 +357,7 @@ void falco_configuration::read_rules_file_directory(const string &path, list<str
 		// It's a directory. Read the contents, sort
 		// alphabetically, and add every path to
 		// rules_filenames
-		vector<string> dir_filenames;
+		std::vector<std::string> dir_filenames;
 
 		DIR *dir = opendir(path.c_str());
 
@@ -371,7 +369,7 @@ void falco_configuration::read_rules_file_directory(const string &path, list<str
 
 		for(struct dirent *ent = readdir(dir); ent; ent = readdir(dir))
 		{
-			string efile = path + "/" + ent->d_name;
+			std::string efile = path + "/" + ent->d_name;
 
 			rc = stat(efile.c_str(), &st);
 
@@ -392,7 +390,7 @@ void falco_configuration::read_rules_file_directory(const string &path, list<str
 		std::sort(dir_filenames.begin(),
 			  dir_filenames.end());
 
-		for(string &ent : dir_filenames)
+		for(std::string &ent : dir_filenames)
 		{
 			rules_filenames.push_back(ent);
 		}
@@ -406,11 +404,11 @@ void falco_configuration::read_rules_file_directory(const string &path, list<str
 	}
 }
 
-static bool split(const string &str, char delim, pair<string, string> &parts)
+static bool split(const std::string &str, char delim, std::pair<std::string, std::string> &parts)
 {
 	size_t pos;
 
-	if((pos = str.find_first_of(delim)) == string::npos)
+	if((pos = str.find_first_of(delim)) == std::string::npos)
 	{
 		return false;
 	}
@@ -420,21 +418,21 @@ static bool split(const string &str, char delim, pair<string, string> &parts)
 	return true;
 }
 
-void falco_configuration::init_cmdline_options(const vector<string> &cmdline_options)
+void falco_configuration::init_cmdline_options(const std::vector<std::string> &cmdline_options)
 {
-	for(const string &option : cmdline_options)
+	for(const std::string &option : cmdline_options)
 	{
 		set_cmdline_option(option);
 	}
 }
 
-void falco_configuration::set_cmdline_option(const string &opt)
+void falco_configuration::set_cmdline_option(const std::string &opt)
 {
-	pair<string, string> keyval;
+	std::pair<std::string, std::string> keyval;
 
 	if(!split(opt, '=', keyval))
 	{
-		throw logic_error("Error parsing config option \"" + opt + "\". Must be of the form key=val or key.subkey=val");
+		throw std::logic_error("Error parsing config option \"" + opt + "\". Must be of the form key=val or key.subkey=val");
 	}
 
 	m_config->set_scalar(keyval.first, keyval.second);
