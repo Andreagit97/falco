@@ -58,4 +58,17 @@ void application::configure_interesting_sets()
 	 */
 	m_state->tp_of_interest = inspector->enforce_sinsp_state_tp();
 	m_state->tp_of_interest.erase(SCHED_SWITCH);
+
+	if(m_options.lsm)
+	{
+		m_state->tp_of_interest.insert(SECURITY_FILE_OPEN);
+		m_state->tp_of_interest.insert(SECURITY_BPRM_CREDS_FOR_EXEC);
+		m_state->tp_of_interest.insert(SECURITY_INODE_UNLINK);
+		m_state->tp_of_interest.insert(SECURITY_SOCKET_ACCEPT);
+		m_state->tp_of_interest.insert(SECURITY_SOCKET_BIND);
+		m_state->tp_of_interest.insert(SECURITY_SOCKET_CONNECT);
+		m_state->tp_of_interest.insert(SECURITY_SOCKET_CREATE);
+		m_state->tp_of_interest.insert(SECURITY_SOCKET_LISTEN);
+		m_state->tp_of_interest.insert(SECURITY_SB_MOUNT);
+	}
 }

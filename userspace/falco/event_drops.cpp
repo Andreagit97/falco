@@ -136,6 +136,15 @@ void syscall_evt_drop_mgr::print_stats()
 	fprintf(stderr, "Syscall event drop monitoring:\n");
 	fprintf(stderr, "   - event drop detected: %lu occurrences\n", m_num_syscall_evt_drops);
 	fprintf(stderr, "   - num times actions taken: %lu\n", m_num_actions);
+	fprintf(stderr, "   - Number events: %" PRIu64 "\n", m_last_stats.n_evts);
+	fprintf(stderr, "   - Number of dropped events: %" PRIu64 "\n", m_last_stats.n_drops);
+	fprintf(stderr, "   - Number of dropped events caused by full buffer: %" PRIu64 "\n", m_last_stats.n_drops_buffer);
+	fprintf(stderr, "   - Number of dropped events caused by full scratch map: %" PRIu64 "\n", m_last_stats.n_drops_scratch_map);
+	fprintf(stderr, "   - Number of dropped events caused by invalid memory access (page faults): %" PRIu64 "\n", m_last_stats.n_drops_pf);
+	fprintf(stderr, "   - Number of dropped events caused by an invalid condition in the kernel instrumentation (bug): %" PRIu64 "\n", m_last_stats.n_drops_bug);
+	fprintf(stderr, "   - Number of preemptions: %" PRIu64 "\n", m_last_stats.n_preemptions);
+	fprintf(stderr, "   - Number of events skipped due to the tid being in a set of suppressed tids: %" PRIu64 "\n", m_last_stats.n_suppressed);
+	fprintf(stderr, "   - Number of threads currently being suppressed: %" PRIu64 "\n", m_last_stats.n_tids_suppressed);
 }
 
 bool syscall_evt_drop_mgr::perform_actions(uint64_t now, scap_stats &delta, bool bpf_enabled)

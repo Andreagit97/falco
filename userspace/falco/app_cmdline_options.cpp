@@ -35,6 +35,7 @@ cmdline_options::cmdline_options()
 	  list_syscall_events(false),
 	  markdown(false),
 	  modern_bpf(false),
+	  lsm(false),
 	  m_cmdline_opts("falco", "Falco - Cloud Native Runtime Security")
 {
 	define();
@@ -182,6 +183,7 @@ void cmdline_options::define()
 		("K,k8s-api-cert",                "Use the provided files names to authenticate user and (optionally) verify the K8S API server identity. Each entry must specify full (absolute, or relative to the current directory) path to the respective file. Private key password is optional (needed only if key is password protected). CA certificate is optional. For all files, only PEM file format is supported. Specifying CA certificate only is obsoleted - when single entry is provided for this option, it will be interpreted as the name of a file containing bearer token. Note that the format of this command-line option prohibits use of files whose names contain ':' or '#' characters in the file name.", cxxopts::value(k8s_api_cert), "(<bt_file> | <cert_file>:<key_file[#password]>[:<ca_cert_file>])")
 		("k8s-node",                      "The node name will be used as a filter when requesting metadata of pods to the API server. Usually, this should be set to the current node on which Falco is running. If empty, no filter is set, which may have a performance penalty on large clusters.", cxxopts::value(k8s_node_name), "<node_name>")
 #endif
+		("lsm",				  "Use lsm hooks.", cxxopts::value(lsm)->default_value("false"))
 		("L",                             "Show the name and description of all rules and exit.", cxxopts::value(describe_all_rules)->default_value("false"))
 		("l",                             "Show the name and description of the rule with name <rule> and exit.", cxxopts::value(describe_rule), "<rule>")
 		("list",                          "List all defined fields. If <source> is provided, only list those fields for the source <source>. Current values for <source> are \"syscall\" or any source from a configured plugin with event sourcing capability.", cxxopts::value(list_source_fields)->implicit_value(""), "<source>")
