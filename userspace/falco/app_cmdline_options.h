@@ -80,6 +80,7 @@ public:
 	bool print_version_info;
 	bool print_page_size;
 	bool modern_bpf;
+	std::string json_path;
 
 	bool parse(int argc, char **argv, std::string &errstr);
 

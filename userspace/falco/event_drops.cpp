@@ -17,6 +17,7 @@ limitations under the License.
 #include "event_drops.h"
 #include "falco_common.h"
 #include "banned.h" // This raises a compilation error when certain functions are used
+#include <fstream>
 
 syscall_evt_drop_mgr::syscall_evt_drop_mgr():
 	m_num_syscall_evt_drops(0),
@@ -25,7 +26,8 @@ syscall_evt_drop_mgr::syscall_evt_drop_mgr():
 	m_outputs(NULL),
 	m_next_check_ts(0),
 	m_simulate_drops(false),
-	m_threshold(0)
+	m_threshold(0),
+	m_json_path("")
 {
 }
 
@@ -34,6 +36,7 @@ syscall_evt_drop_mgr::~syscall_evt_drop_mgr()
 }
 
 void syscall_evt_drop_mgr::init(std::shared_ptr<sinsp> inspector,
+				std::string json_path,
 				std::shared_ptr<falco_outputs> outputs,
 				syscall_evt_drop_actions &actions,
 				double threshold,
@@ -46,6 +49,10 @@ void syscall_evt_drop_mgr::init(std::shared_ptr<sinsp> inspector,
 	m_actions = actions;
 	m_bucket.init(rate, max_tokens);
 	m_threshold = threshold;
+	m_json_path = json_path;
+
+	/* Get the capture start time */
+	gettimeofday(&m_start, NULL);
 
 	m_inspector->get_capture_stats(&m_last_stats);
 
@@ -133,9 +140,33 @@ bool syscall_evt_drop_mgr::process_event(std::shared_ptr<sinsp> inspector, sinsp
 
 void syscall_evt_drop_mgr::print_stats()
 {
+	struct timeval end;
+	struct timeval result;
+	gettimeofday(&end, NULL);
+	timersub(&end, &m_start, &result);
+
 	fprintf(stderr, "Syscall event drop monitoring:\n");
 	fprintf(stderr, "   - event drop detected: %lu occurrences\n", m_num_syscall_evt_drops);
 	fprintf(stderr, "   - num times actions taken: %lu\n", m_num_actions);
+	fprintf(stderr, "   - Seen by driver: %" PRIu64 "\n", m_last_stats.n_evts);
+	fprintf(stderr, "   - Time elapsed: %ld s\n", result.tv_sec);
+	fprintf(stderr, "   - Number of dropped events: %" PRIu64 "\n", m_last_stats.n_drops);
+	fprintf(stderr, "   - Number of dropped events caused by full buffer: %" PRIu64 "\n", m_last_stats.n_drops_buffer);
+	fprintf(stderr, "   - Number of dropped events caused by full scratch map: %" PRIu64 "\n", m_last_stats.n_drops_scratch_map);
+	fprintf(stderr, "   - Number of dropped events caused by invalid memory access (page faults): %" PRIu64 "\n", m_last_stats.n_drops_pf);
+	fprintf(stderr, "   - Number of dropped events caused by an invalid condition in the kernel instrumentation (bug): %" PRIu64 "\n", m_last_stats.n_drops_bug);
+	fprintf(stderr, "   - Number of preemptions: %" PRIu64 "\n", m_last_stats.n_preemptions);
+	fprintf(stderr, "   - Number of events skipped due to the tid being in a set of suppressed tids: %" PRIu64 "\n", m_last_stats.n_suppressed);
+	fprintf(stderr, "   - Number of threads currently being suppressed: %" PRIu64 "\n", m_last_stats.n_tids_suppressed);
+
+	/* Right now it is always enabled */
+	Json::Value stats;
+	std::ofstream outfile(m_json_path);
+	stats["seenByDrivers"] = Json::UInt64(m_last_stats.n_evts);
+	stats["timeElapsed"] = Json::UInt64(result.tv_sec);
+	stats["drops"] = Json::UInt64(m_last_stats.n_drops);
+	outfile << stats << std::endl;
+	outfile.close();
 }
 
 bool syscall_evt_drop_mgr::perform_actions(uint64_t now, scap_stats &delta, bool bpf_enabled)

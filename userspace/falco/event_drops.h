@@ -17,6 +17,7 @@ limitations under the License.
 
 #include <memory>
 #include <unordered_set>
+#include <sys/time.h>
 
 #include <sinsp.h>
 #include <token_bucket.h>
@@ -43,6 +44,7 @@ public:
 	virtual ~syscall_evt_drop_mgr();
 
 	void init(std::shared_ptr<sinsp> inspector,
+		  std::string json_path,		
 		  std::shared_ptr<falco_outputs> outputs,
 		  syscall_evt_drop_actions &actions,
 		  double threshold,
@@ -63,6 +65,8 @@ protected:
 	// Perform all configured actions.
 	bool perform_actions(uint64_t now, scap_stats &delta, bool bpf_enabled);
 
+	struct timeval m_start;
+	std::string m_json_path;
 	uint64_t m_num_syscall_evt_drops;
 	uint64_t m_num_actions;
 	std::shared_ptr<sinsp> m_inspector;

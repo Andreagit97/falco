@@ -83,6 +83,7 @@ application::run_result application::do_inspect(
 	if (check_drops_and_timeouts)
 	{
 		sdropmgr.init(inspector,
+				m_options.json_path,
 				m_state->outputs, // drop manager has its own rate limiting logic
 				m_state->config->m_syscall_evt_drop_actions,
 				m_state->config->m_syscall_evt_drop_threshold,

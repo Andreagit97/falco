@@ -29,7 +29,8 @@ namespace app {
 // initialize their linked variables.
 cmdline_options::cmdline_options()
 	: event_buffer_format(sinsp_evt::PF_NORMAL),
-	  gvisor_config(""),	
+	  gvisor_config(""),
+	  json_path(""),
 	  list_fields(false),
 	  list_plugins(false),
 	  list_syscall_events(false),
@@ -211,6 +212,7 @@ void cmdline_options::define()
 		("V,validate",                    "Read the contents of the specified rules(s) file and exit. This option can be passed multiple times to validate multiple files.", cxxopts::value(validate_rules_filenames), "<rules_file>")
 		("v",                             "Verbose output.", cxxopts::value(verbose)->default_value("false"))
 		("version",                       "Print version number.", cxxopts::value(print_version_info)->default_value("false"))
+		("json-path",                     "Json file where we need to print our stats.", cxxopts::value(json_path)->default_value("./falco-stats.json"))
 		("page-size",                     "Print the system page size (may help you to choose the right syscall ring-buffer size).", cxxopts::value(print_page_size)->default_value("false"));
 
 
