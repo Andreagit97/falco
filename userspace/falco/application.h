@@ -128,6 +128,8 @@ private:
 		// Dimension of the syscall buffer in bytes.
 		uint64_t syscall_buffer_bytes_size;
 
+		enum modern_bpf_buffer_mode syscall_buffer_mode;
+
 #ifndef MINIMAL_BUILD
 		falco::grpc::server grpc_server;
 		std::thread grpc_server_thread;
@@ -330,6 +332,7 @@ private:
 	run_result select_event_sources();
 	void configure_interesting_sets();
 	application::run_result configure_syscall_buffer_size();
+	application::run_result configure_syscall_buffer_mode();
 #ifndef MINIMAL_BUILD
 	run_result start_grpc_server();
 	run_result start_webserver();

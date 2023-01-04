@@ -75,7 +75,8 @@ application::state::state()
 	  plugin_configs(),
 	  ppm_sc_of_interest(),
 	  tp_of_interest(),
-	  syscall_buffer_bytes_size(DEFAULT_DRIVER_BUFFER_BYTES_DIM)
+	  syscall_buffer_bytes_size(DEFAULT_DRIVER_BUFFER_BYTES_DIM),
+	  syscall_buffer_mode(MODERN_PER_CPU_BUFFER)
 {
 	config = std::make_shared<falco_configuration>();
 	engine = std::make_shared<falco_engine>();
@@ -194,6 +195,7 @@ bool application::run(std::string &errstr, bool &restart)
 		std::bind(&application::init_outputs, this),
 		std::bind(&application::init_clients, this),
 		std::bind(&application::configure_syscall_buffer_size, this),
+		std::bind(&application::configure_syscall_buffer_mode, this),
 #ifndef MINIMAL_BUILD
 		std::bind(&application::start_grpc_server, this),
 		std::bind(&application::start_webserver, this),

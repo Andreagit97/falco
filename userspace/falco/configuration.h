@@ -272,6 +272,8 @@ public:
 	// Index corresponding to the syscall buffer dimension.
 	uint16_t m_syscall_buf_size_preset;
 
+	std::string m_syscall_buf_mode_string;
+
 	std::vector<plugin_config> m_plugins;
 
 private:

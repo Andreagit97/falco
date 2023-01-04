@@ -225,6 +225,9 @@ syscall_event_timeouts:
 
 syscall_buf_size_preset: 4
 
+# Possible values: per-cpu, single, paired
+syscall_buf_mode: "per-cpu"
+
 # Falco continuously monitors outputs performance. When an output channel does not allow
 # to deliver an alert within a given deadline, an error is reported indicating
 # which output is blocking notifications.

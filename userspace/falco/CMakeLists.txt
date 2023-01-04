@@ -39,6 +39,7 @@ set(
   app_actions/print_version.cpp
   app_actions/print_page_size.cpp
   app_actions/compute_syscall_buffer_size.cpp
+  app_actions/configure_syscall_buffer_mode.cpp
   app_actions/select_event_sources.cpp
   app_actions/start_grpc_server.cpp
   app_actions/start_webserver.cpp
