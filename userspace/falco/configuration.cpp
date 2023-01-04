@@ -55,6 +55,8 @@ falco_configuration::falco_configuration():
 	m_metadata_download_chunk_wait_us(1000),
 	m_metadata_download_watch_freq_sec(1),
 	m_syscall_buf_size_preset(4),
+	m_cpus_for_each_syscall_buffer(1),
+	m_online_cpus_only(true),
 	m_config(NULL)
 {
 }
@@ -305,6 +307,11 @@ void falco_configuration::init(const std::string& conf_filename, const std::vect
 	 * The default value is `4` -> 8 MB.
 	 */
 	m_syscall_buf_size_preset = m_config->get_scalar<uint16_t>("syscall_buf_size_preset", 4);
+	
+	m_cpus_for_each_syscall_buffer = m_config->get_scalar<uint16_t>("cpus_for_each_syscall_buffer", 1);
+
+	m_online_cpus_only = m_config->get_scalar<bool>("online_cpus_only", true);
+
 
 	std::set<std::string> load_plugins;
 
