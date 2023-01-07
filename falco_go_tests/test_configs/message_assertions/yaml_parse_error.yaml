@@ -1,0 +1,5 @@
+- name: "invalid-not-yaml"
+  args: "-c ./falco/etc/falco/falco.yaml -r ./rules/invalid_not_yaml.yaml -e ./scap_files/cat_write.scap"
+  summary_file: ./output_dir/message_assertions/invalid-not-yaml
+  exit_status: 1
+  messages: ["LOAD_ERR_YAML_VALIDATE (Error validating internal structure of YAML file): Rules content is not yaml"]

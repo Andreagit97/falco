@@ -1,0 +1,15 @@
+- name: "container-privileged"
+  args: "-c ./falco/etc/falco/falco.yaml -r ./falco/etc/falco/falco_rules.yaml -e ./scap_files/traces-positive/container-privileged.scap --print-json-stats=./output_dir/summary_assertions/container-privileged.json -A"
+  summary_file: ./output_dir/summary_assertions/container-privileged.json
+  detect: True
+  severities: [INFO]
+  triggered_rules:
+    "Launch Privileged Container": 3
+
+- name: "rule-names-with-spaces"
+  args: "-c ./falco/etc/falco/falco.yaml -r ./rules/rule_names_with_spaces.yaml -e ./scap_files/cat_write.scap --print-json-stats=./output_dir/summary_assertions/rule-names-with-spaces.json"
+  summary_file: ./output_dir/summary_assertions/rule-names-with-spaces.json
+  detect: True
+  severities: [WARNING]
+  triggered_rules:
+    "Open From Cat": 8
