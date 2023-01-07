@@ -66,6 +66,13 @@ public:
 		const indexed_vector<falco_rule>& rules,
 		std::string& out) const;
 
+	/*!
+		\brief Formats the internal statistics into the provided json file.
+	*/
+	virtual void format_json(
+		const indexed_vector<falco_rule>& rules,
+		const std::string& filepath) const;
+
 private:
 	atomic<uint64_t> m_total;
 	std::vector<std::unique_ptr<atomic<uint64_t>>> m_by_priority;

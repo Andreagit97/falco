@@ -35,6 +35,7 @@ cmdline_options::cmdline_options()
 	  list_syscall_events(false),
 	  markdown(false),
 	  modern_bpf(false),
+	  json_summary_stats_file(""),
 	  m_cmdline_opts("falco", "Falco - Cloud Native Runtime Security")
 {
 	define();
@@ -211,7 +212,9 @@ void cmdline_options::define()
 		("V,validate",                    "Read the contents of the specified rules(s) file and exit. This option can be passed multiple times to validate multiple files.", cxxopts::value(validate_rules_filenames), "<rules_file>")
 		("v",                             "Verbose output.", cxxopts::value(verbose)->default_value("false"))
 		("version",                       "Print version number.", cxxopts::value(print_version_info)->default_value("false"))
-		("page-size",                     "Print the system page size (may help you to choose the right syscall ring-buffer size).", cxxopts::value(print_page_size)->default_value("false"));
+		("page-size",                     "Print the system page size (may help you to choose the right syscall ring-buffer size).", cxxopts::value(print_page_size)->default_value("false"))
+		("print-json-stats",                     "Instruct Falco engine to print summary stats on a json file. The argument is the json file path.", cxxopts::value<std::string>(json_summary_stats_file)->implicit_value(""), "<json_file_path>");
+
 
 
 	m_cmdline_opts.set_width(140);

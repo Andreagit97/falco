@@ -249,6 +249,12 @@ public:
 		const std::vector<plugin_version_requirement>& plugins,
 		std::string& err) const;
 
+
+	void set_json_summary_stats_file(const std::string &filepath)
+	{
+		m_json_summary_stats_file = filepath;
+	}
+
 private:
 
 	// Throws falco_exception if the file can not be read
@@ -315,5 +321,5 @@ private:
 
 	std::string m_extra;
 	bool m_replace_container_info;
+	std::string m_json_summary_stats_file;
 };
-

@@ -47,7 +47,8 @@ falco_engine::falco_engine(bool seed_rng)
 	  m_next_ruleset_id(0),
 	  m_min_priority(falco_common::PRIORITY_DEBUG),
 	  m_sampling_ratio(1), m_sampling_multiplier(0),
-	  m_replace_container_info(false)
+	  m_replace_container_info(false),
+	  m_json_summary_stats_file("")
 {
 	if(seed_rng)
 	{
@@ -434,10 +435,19 @@ void falco_engine::describe_rule(string *rule) const
 
 void falco_engine::print_stats() const
 {
-	string out;
-	m_rule_stats_manager.format(m_rules, out);
-	// todo(jasondellaluce): introduce a logging callback in Falco
-	fprintf(stdout, "%s", out.c_str());
+	if(m_json_summary_stats_file.empty())
+	{
+		std::cerr << "1. path: " << m_json_summary_stats_file << std::endl;
+		string out;
+		m_rule_stats_manager.format(m_rules, out);
+		// todo(jasondellaluce): introduce a logging callback in Falco
+		fprintf(stdout, "%s", out.c_str());
+	}
+	else
+	{
+		std::cerr << "2. path: " << m_json_summary_stats_file << std::endl;
+		m_rule_stats_manager.format_json(m_rules, m_json_summary_stats_file);
+	}
 }
 
 bool falco_engine::is_source_valid(const std::string &source) const

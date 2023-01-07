@@ -150,6 +150,9 @@ bool application::init(int argc, char **argv, std::string &errstr)
 		return false;
 	}
 
+	/* Set the json file path into the engine */
+	m_state->engine->set_json_summary_stats_file(m_options.json_summary_stats_file);
+
 	for(char **arg = argv; *arg; arg++)
 	{
 		if(m_state->cmdline.size() > 0)

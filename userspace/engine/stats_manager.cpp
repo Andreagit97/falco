@@ -16,8 +16,14 @@ limitations under the License.
 
 #include "stats_manager.h"
 #include "falco_common.h"
+#include <fstream>
 
 using namespace std;
+
+/* If you change these you will need to change also the tests */
+#define EVENTSDETECTED "eventsDetected"
+#define RULESCOUNT "ruleCountsBySeverity"
+#define TRIGGEREDRULES "triggeredRules"
 
 stats_manager::stats_manager()
 	: m_total(0)
@@ -63,6 +69,50 @@ void stats_manager::format(
 			out += "   " + rules.at(i)->name + ": " + to_string(val) + "\n";
 		}
 	}
+}
+
+/* Right now this method is used for testing purposes */
+void stats_manager::format_json(
+	const indexed_vector<falco_rule>& rules,
+	const string& filepath) const
+{
+	std::string fmt;
+	Json::Value event;
+	Json::Value rules_severity;
+	Json::Value triggered_rules;
+	Json::StyledWriter styled_writer;
+
+	for(size_t i = 0; i < m_by_priority.size(); i++)
+	{
+		auto val = m_by_priority[i].get()->load();
+		if (val > 0)
+		{
+			falco_common::format_priority((falco_common::priority_type) i, fmt, true);
+			transform(fmt.begin(), fmt.end(), fmt.begin(), ::toupper);
+			rules_severity[fmt] = Json::UInt64(val);
+		}
+	}
+
+	for(size_t i = 0; i < m_by_rule_id.size(); i++)
+	{
+		auto val = m_by_rule_id[i].get()->load();
+		if (val > 0)
+		{
+			triggered_rules[rules.at(i)->name] = Json::UInt64(val);
+		}
+	}
+
+	std::ofstream outfile(filepath);
+	if(!outfile.is_open())
+	{
+		fprintf(stdout, "unabel to open json file: %s\n", filepath.c_str());
+	}
+
+	event[EVENTSDETECTED] = Json::UInt64(m_total);
+	event[RULESCOUNT] = rules_severity;
+	event[TRIGGEREDRULES] = triggered_rules;
+	outfile << styled_writer.write(event) << std::endl;
+	outfile.close();
 }
 
 void stats_manager::on_rule_loaded(const falco_rule& rule)
