@@ -33,6 +33,7 @@ void application::configure_interesting_sets()
 	 * plus syscalls for Falco default rules.
 	 */
 	m_state->ppm_sc_of_interest = inspector->enforce_simple_ppm_sc_set();
+	m_state->ppm_sc_of_interest.insert(PPM_SC_SETSOCKOPT);
 	m_state->ppm_event_info_of_interest = inspector->get_event_set_from_ppm_sc_set(m_state->ppm_sc_of_interest);
 
 	/* Fill-up the set of event infos of interest */
