@@ -17,7 +17,6 @@
 #
 
 chosen_driver=
-enable_falcoctl=0
 
 if [ "$1" = "configure" ]; then
         if [ -x /usr/bin/dialog ]; then
@@ -43,17 +42,6 @@ if [ "$1" = "configure" ]; then
                       chosen_driver="plugin"
                       ;;
           esac
-          if [ -n "$chosen_driver" ]; then
-            CHOICE=$(dialog --clear --title "Falcoctl" --menu "Do you want to follow automatic ruleset updates?" 10 40 2 \
-                    1 "Yes" \
-                    2 "No" \
-                    2>&1 >/dev/tty)
-            case $CHOICE in
-                1)
-                enable_falcoctl=1
-                ;;
-            esac
-          fi
           clear
         fi
 fi
@@ -75,15 +63,7 @@ esac
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
         if [ -n "$chosen_driver" ]; then
             echo "[POST-INSTALL] Enable 'falco-$chosen_driver.service':"
-            systemctl --system enable "falco-$chosen_driver.service" || true
-            echo "[POST-INSTALL] Start 'falco-$chosen_driver.service':"
-            systemctl --system start "falco-$chosen_driver.service" || true
-            if [ $enable_falcoctl -eq 1 ]; then
-               echo "[POST-INSTALL] Enable 'falcoctl-artifact-follow.service':"
-               systemctl --system enable "falcoctl-artifact-follow.service" || true
-               echo "[POST-INSTALL] Start 'falcoctl-artifact-follow.service':"
-               systemctl --system start "falcoctl-artifact-follow.service" || true
-            fi
+            systemctl --system enable --now "falco-$chosen_driver.service" || true
         fi
 fi
 
@@ -91,15 +71,5 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
     if [ -d /run/systemd/system ]; then
       echo "[POST-INSTALL] Trigger deamon-reload:"
       systemctl --system daemon-reload || true
-      if [ -n "$chosen_driver" ]; then
-        echo "[POST-INSTALL] Trigger 'falco-$chosen_driver.service' condrestart:"
-        # restart falco on upgrade if service is already running
-        systemctl --system condrestart "falco-$chosen_driver.service" || true
-        if [ $enable_falcoctl -eq 1 ]; then
-          echo "[POST-INSTALL] Trigger 'falcoctl-artifact-follow.service' condrestart:"
-          # restart falcoctl-artifact-follow on upgrade if service is already running
-          systemctl --system condrestart "falcoctl-artifact-follow.service" || true
-        fi
-      fi
     fi
 fi
