@@ -64,6 +64,8 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
         if [ -n "$chosen_driver" ]; then
             echo "[POST-INSTALL] Enable 'falco-$chosen_driver.service':"
             systemctl --system enable --now "falco-$chosen_driver.service" || true
+            echo "[POST-INSTALL] Enable 'falcoctl-artifact-follow.service':"
+            systemctl --system enable --now "falcoctl-artifact-follow.service" || true
         fi
 fi
 

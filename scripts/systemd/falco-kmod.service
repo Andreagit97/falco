@@ -1,8 +1,6 @@
 [Unit]
 Description=Falco: Container Native Runtime Security with kmod
 Documentation=https://falco.org/docs/
-Before=falcoctl-artifact-follow.service
-Wants=falcoctl-artifact-follow.service
 After=falco-kmod-inject.service
 Requires=falco-kmod-inject.service
 Conflicts=falco-bpf.service

@@ -39,4 +39,3 @@ ARG DEST_BUILD_DIR="/build"
 COPY --from=build-stage /build/release/falco-*.tar.gz /packages/
 COPY --from=build-stage /build/release/falco-*.deb /packages/
 COPY --from=build-stage /build/release/falco-*.rpm /packages/
-COPY --from=build-stage /build/release/ ${DEST_BUILD_DIR}

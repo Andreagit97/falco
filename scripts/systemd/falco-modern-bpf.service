@@ -1,8 +1,6 @@
 [Unit]
 Description=Falco: Container Native Runtime Security with modern ebpf
 Documentation=https://falco.org/docs/
-Before=falcoctl-artifact-follow.service
-Wants=falcoctl-artifact-follow.service
 Conflicts=falco-kmod.service
 Conflicts=falco-bpf.service
 Conflicts=falco-plugin.service
