@@ -54,6 +54,7 @@ set -e
 case "$chosen_driver" in
     "kmod")
       echo "[POST-INSTALL] Call 'falco-driver-loader module':"
+      echo "[POST-INSTALL] Call 'falco-driver-loader module':"
       falco-driver-loader module
       ;;
     "bpf")
