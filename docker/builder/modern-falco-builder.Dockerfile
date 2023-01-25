@@ -40,4 +40,21 @@ ARG DEST_BUILD_DIR="/build"
 COPY --from=build-stage /build/release/falco-*.tar.gz /packages/
 COPY --from=build-stage /build/release/falco-*.deb /packages/
 COPY --from=build-stage /build/release/falco-*.rpm /packages/
-COPY --from=build-stage /build/release/ ${DEST_BUILD_DIR}
+
+# This is just a workaround to avoid GB of data moved from the container to the CI machine
+COPY --from=build-stage /build/release/cloudtrail-plugin-prefix ${DEST_BUILD_DIR}/cloudtrail-plugin-prefix
+COPY --from=build-stage /build/release/cloudtrail-rules-prefix ${DEST_BUILD_DIR}/cloudtrail-rules-prefix
+COPY --from=build-stage /build/release/falcosecurity-rules-application-prefix ${DEST_BUILD_DIR}/falcosecurity-rules-application-prefix
+COPY --from=build-stage /build/release/falcosecurity-rules-falco-prefix ${DEST_BUILD_DIR}/falcosecurity-rules-falco-prefix
+COPY --from=build-stage /build/release/falcosecurity-rules-local-prefix ${DEST_BUILD_DIR}/falcosecurity-rules-local-prefix
+COPY --from=build-stage /build/release/json-plugin-prefix ${DEST_BUILD_DIR}/json-plugin-prefix
+COPY --from=build-stage /build/release/k8saudit-plugin-prefix ${DEST_BUILD_DIR}/k8saudit-plugin-prefix
+COPY --from=build-stage /build/release/k8saudit-rules-prefix ${DEST_BUILD_DIR}/k8saudit-rules-prefix
+COPY --from=build-stage /build/release/scripts ${DEST_BUILD_DIR}/scripts
+COPY --from=build-stage /build/release/test ${DEST_BUILD_DIR}/test
+COPY --from=build-stage /build/release/tests ${DEST_BUILD_DIR}/tests
+COPY --from=build-stage /build/release/Testing ${DEST_BUILD_DIR}/Testing
+COPY --from=build-stage /build/release/userspace ${DEST_BUILD_DIR}/userspace
+COPY --from=build-stage /build/release/falco-*.tar.gz ${DEST_BUILD_DIR}/
+COPY --from=build-stage /build/release/falco-*.deb ${DEST_BUILD_DIR}/
+COPY --from=build-stage /build/release/falco-*.rpm ${DEST_BUILD_DIR}/
