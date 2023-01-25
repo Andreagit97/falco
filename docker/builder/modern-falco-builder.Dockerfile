@@ -53,6 +53,7 @@ COPY --from=build-stage /build/release/k8saudit-rules-prefix ${DEST_BUILD_DIR}/k
 COPY --from=build-stage /build/release/scripts ${DEST_BUILD_DIR}/scripts
 COPY --from=build-stage /build/release/test ${DEST_BUILD_DIR}/test
 COPY --from=build-stage /build/release/userspace/falco/falco ${DEST_BUILD_DIR}/userspace/falco/falco
+COPY --from=build-stage /build/release/userspace/falco/config_falco.h ${DEST_BUILD_DIR}/userspace/falco/config_falco.h
 COPY --from=build-stage /build/release/falco-*.tar.gz ${DEST_BUILD_DIR}/
 COPY --from=build-stage /build/release/falco-*.deb ${DEST_BUILD_DIR}/
 COPY --from=build-stage /build/release/falco-*.rpm ${DEST_BUILD_DIR}/
