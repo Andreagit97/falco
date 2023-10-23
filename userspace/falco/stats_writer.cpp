@@ -360,19 +360,7 @@ void stats_writer::collector::get_metrics_output_fields_additional(
 #if !defined(MINIMAL_BUILD) and !defined(__EMSCRIPTEN__)
 	uint32_t nstats = 0;
 	int32_t rc = 0;
-	uint32_t flags = 0;
-
-	if (m_writer->m_config->m_metrics_resource_utilization_enabled)
-	{
-		/* Resource utilization, CPU and memory usage etc. */
-		flags |= PPM_SCAP_STATS_RESOURCE_UTILIZATION;
-	}
-
-	if (m_writer->m_config->m_metrics_state_counters_enabled)
-	{
-		/* Counters related to sinsp state (threadtable including fds per thread as well as container cache) */
-		flags |= PPM_SCAP_STATS_STATE_COUNTERS;
-	}
+	uint32_t flags = m_writer->m_config->m_metrics_flags;
 
 	auto buffer = inspector->get_sinsp_stats_v2_buffer();
 	sinsp_stats_v2 sinsp_stats_v2 = inspector->get_sinsp_stats_v2();
@@ -450,18 +438,17 @@ void stats_writer::collector::get_metrics_output_fields_additional(
 	/* Kernel side stats counters and libbpf stats if applicable. */
 	nstats = 0;
 	rc = 0;
-	flags = 0;
+	if (!(inspector->check_current_engine(BPF_ENGINE) || inspector->check_current_engine(MODERN_BPF_ENGINE)))
+	{
+		flags &= ~PPM_SCAP_STATS_LIBBPF_STATS;
+	}
+	if (!(machine_info->flags & PPM_BPF_STATS_ENABLED))
+	{
+		flags &= ~PPM_SCAP_STATS_LIBBPF_STATS;
+	}
 
-	if (m_writer->m_config->m_metrics_kernel_event_counters_enabled)
-	{
-		flags |= PPM_SCAP_STATS_KERNEL_COUNTERS;
-	}
-	if (m_writer->m_config->m_metrics_libbpf_stats_enabled && (inspector->check_current_engine(BPF_ENGINE) || inspector->check_current_engine(MODERN_BPF_ENGINE)))
-	{
-		flags |= PPM_SCAP_STATS_LIBBPF_STATS;
-	}
-	const scap_stats_v2* stats_v2_snapshot = inspector->get_capture_stats_v2(flags, &nstats, &rc);
-	if (stats_v2_snapshot && nstats > 0 && rc == 0)
+	const scap_stats_v2* scap_stats_v2_snapshot = inspector->get_capture_stats_v2(flags, &nstats, &rc);
+	if (scap_stats_v2_snapshot && nstats > 0 && rc == 0)
 	{
 		/* Cache n_evts and n_drops to derive n_drops_perc. */
 		uint64_t n_evts = 0;
@@ -470,21 +457,21 @@ void stats_writer::collector::get_metrics_output_fields_additional(
 		uint64_t n_drops_delta = 0;
 		for(uint32_t stat = 0; stat < nstats; stat++)
 		{
-			if (stats_v2_snapshot[stat].name[0] == '\0')
+			if (scap_stats_v2_snapshot[stat].name[0] == '\0')
 			{
 				break;
 			}
 			// todo: as we expand scap_stats_v2 prefix may be pushed to scap or we may need to expand
 			// functionality here for example if we add userspace syscall counters that should be prefixed w/ `falco.`
 			char metric_name[STATS_NAME_MAX] = "scap.";
-			strlcat(metric_name, stats_v2_snapshot[stat].name, sizeof(metric_name));
-			switch(stats_v2_snapshot[stat].type)
+			strlcat(metric_name, scap_stats_v2_snapshot[stat].name, sizeof(metric_name));
+			switch(scap_stats_v2_snapshot[stat].type)
 			{
 			case STATS_VALUE_TYPE_U64:
 				/* Always send high level n_evts related fields, even if zero. */
-				if (strncmp(stats_v2_snapshot[stat].name, "n_evts", 7) == 0) // exact not prefix match here
+				if (strncmp(scap_stats_v2_snapshot[stat].name, "n_evts", 7) == 0) // exact not prefix match here
 				{
-					n_evts = stats_v2_snapshot[stat].value.u64;
+					n_evts = scap_stats_v2_snapshot[stat].value.u64;
 					output_fields[metric_name] = n_evts;
 					output_fields["scap.n_evts_prev"] = m_last_n_evts;
 					n_evts_delta = n_evts - m_last_n_evts;
@@ -500,9 +487,9 @@ void stats_writer::collector::get_metrics_output_fields_additional(
 					m_last_n_evts = n_evts;
 				}
 				/* Always send high level n_drops related fields, even if zero. */
-				else if (strncmp(stats_v2_snapshot[stat].name, "n_drops", 8) == 0) // exact not prefix match here
+				else if (strncmp(scap_stats_v2_snapshot[stat].name, "n_drops", 8) == 0) // exact not prefix match here
 				{
-					n_drops = stats_v2_snapshot[stat].value.u64;
+					n_drops = scap_stats_v2_snapshot[stat].value.u64;
 					output_fields[metric_name] = n_drops;
 					output_fields["scap.n_drops_prev"] = m_last_n_drops;
 					n_drops_delta = n_drops - m_last_n_drops;
@@ -517,11 +504,11 @@ void stats_writer::collector::get_metrics_output_fields_additional(
 					}
 					m_last_n_drops = n_drops;
 				}
-				if (stats_v2_snapshot[stat].value.u64 == 0 && !m_writer->m_config->m_metrics_include_empty_values)
+				if (scap_stats_v2_snapshot[stat].value.u64 == 0 && !m_writer->m_config->m_metrics_include_empty_values)
 				{
 					break;
 				}
-				output_fields[metric_name] = stats_v2_snapshot[stat].value.u64;
+				output_fields[metric_name] = scap_stats_v2_snapshot[stat].value.u64;
 				break;
 			default:
 				break;
