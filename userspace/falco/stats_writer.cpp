@@ -363,7 +363,7 @@ void stats_writer::collector::get_metrics_output_fields_additional(
 	uint32_t flags = m_writer->m_config->m_metrics_flags;
 
 	auto buffer = inspector->get_sinsp_stats_v2_buffer();
-	sinsp_stats_v2 sinsp_stats_v2 = inspector->get_sinsp_stats_v2();
+	auto sinsp_stats_v2 = inspector->get_sinsp_stats_v2();
 	sinsp_thread_manager* thread_manager = inspector->m_thread_manager;
 	const scap_stats_v2* sinsp_stats_v2_snapshot = libsinsp::stats::get_sinsp_stats_v2(flags, agent_info, thread_manager, sinsp_stats_v2, buffer, &nstats, &rc);
 
