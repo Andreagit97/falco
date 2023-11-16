@@ -436,6 +436,7 @@ falco::app::run_result falco::app::actions::process_events(falco::app::state& s)
 		return res;
 	}
 
+	// todo!: Why do we need to initialize the stats_writer if the metrics are not enabled?
 	// Initialize stats writer
 	auto statsw = std::make_shared<stats_writer>(s.outputs, s.config);
 	auto res = init_stats_writer(statsw, s.config);
@@ -455,6 +456,8 @@ falco::app::run_result falco::app::actions::process_events(falco::app::state& s)
 			return res;
 		}
 
+		// todo!: probably when we read scap-files we don't need things like the stats or the source name
+		// maybe we can use a dedicated method.
 		process_inspector_events(s, s.offline_inspector, statsw, "", nullptr, &res);
 		s.offline_inspector->close();
 

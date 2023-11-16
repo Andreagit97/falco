@@ -169,7 +169,7 @@ stats_writer::ticker_t stats_writer::get_ticker()
 stats_writer::stats_writer(
 		const std::shared_ptr<falco_outputs>& outputs,
 		const std::shared_ptr<const falco_configuration>& config)
-	: m_initialized(false), m_total_samples(0)
+	: m_initialized(false)
 {
 	m_config = config;
 	if (config->m_metrics_enabled)
@@ -254,6 +254,7 @@ void stats_writer::worker() noexcept
 	auto tick = stats_writer::get_ticker();
 	auto last_tick = tick;
 	auto first_tick = tick;
+	uint64_t total_samples = 0;
 
 	while(true)
 	{
@@ -272,7 +273,7 @@ void stats_writer::worker() noexcept
 		{
 			if (last_tick != tick)
 			{
-				m_total_samples++;
+				total_samples++;
 			}
 			last_tick = tick;
 
@@ -288,7 +289,7 @@ void stats_writer::worker() noexcept
 				if (use_file)
 				{
 					nlohmann::json jmsg;
-					jmsg["sample"] = m_total_samples;
+					jmsg["sample"] = total_samples;
 					jmsg["output_fields"] = m.output_fields;
 					m_file_output << jmsg.dump() << std::endl;
 				}

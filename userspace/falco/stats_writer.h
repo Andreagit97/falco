@@ -143,7 +143,6 @@ private:
 	inline void push(const stats_writer::msg& m);
 
 	bool m_initialized;
-	uint64_t m_total_samples;
 	std::thread m_worker;
 	std::ofstream m_file_output;
 #ifndef __EMSCRIPTEN__
