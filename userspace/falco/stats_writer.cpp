@@ -169,42 +169,50 @@ stats_writer::ticker_t stats_writer::get_ticker()
 stats_writer::stats_writer(
 		const std::shared_ptr<falco_outputs>& outputs,
 		const std::shared_ptr<const falco_configuration>& config)
-	: m_initialized(false)
+	: m_config(config)
 {
-	m_config = config;
-	if (config->m_metrics_enabled)
+	if(!m_config->m_metrics_enabled)
 	{
-		/* m_outputs should always be initialized because we use it
-		 * to extract output-queue stats in both cases: rule output and file output.
-		 */
-		m_outputs = outputs;
-
-		if (!config->m_metrics_output_file.empty())
-		{
-			m_file_output.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-			m_file_output.open(config->m_metrics_output_file, std::ios_base::app);
-			m_initialized = true;
-		}
-
-		if (config->m_metrics_stats_rule_enabled)
-		{
-			m_initialized = true;
-		}
+		return;
 	}
 
-	if (m_initialized)
+	uint8_t enabled_outputs = 0;
+
+	// File output
+	if(!m_config->m_metrics_output_file.empty())
 	{
+		m_file_output.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+		m_file_output.open(config->m_metrics_output_file, std::ios_base::app);
+		enabled_outputs++;
+	}
+
+	// Rule output
+	if(config->m_metrics_stats_rule_enabled)
+	{
+		enabled_outputs++;
+	}
+
+	// At least one output should be enabled
+	if(enabled_outputs<1)
+	{
+		throw falco_exception("If you enable metrics you need to chose at least one output method between (file output,rule output)");
+	}
+
+	/* m_outputs should always be initialized because we use it
+	 * to extract output-queue stats in both cases: rule output and file output.
+	 */
+	m_outputs = outputs;		
+
 #ifndef __EMSCRIPTEN__
-		// Adopt capacity for completeness, even if it's likely not relevant
-		m_queue.set_capacity(config->m_outputs_queue_capacity);
-		m_worker = std::thread(&stats_writer::worker, this);
+	// Adopt capacity for completeness, even if it's likely not relevant
+	m_queue.set_capacity(config->m_outputs_queue_capacity);
+	m_worker = std::thread(&stats_writer::worker, this);
 #endif
-	}
 }
 
 stats_writer::~stats_writer()
 {
-	if (m_initialized)
+	if(m_config->m_metrics_enabled)
 	{
 #ifndef __EMSCRIPTEN__
 		stop_worker();

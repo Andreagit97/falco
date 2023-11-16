@@ -106,7 +106,8 @@ public:
 	*/
 	inline bool has_output() const
 	{
-		return m_initialized;
+		// If the metrics are enabled we must have at least one valid output otherwise we throw an exception
+		return m_config->m_metrics_enabled;
 	}
 
 	/*!
@@ -142,7 +143,6 @@ private:
 	void stop_worker();
 	inline void push(const stats_writer::msg& m);
 
-	bool m_initialized;
 	std::thread m_worker;
 	std::ofstream m_file_output;
 #ifndef __EMSCRIPTEN__
