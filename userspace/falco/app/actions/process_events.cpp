@@ -392,39 +392,6 @@ static void process_inspector_events(
 	}
 }
 
-static falco::app::run_result init_stats_writer(
-		const std::shared_ptr<const stats_writer>& sw,
-		const std::shared_ptr<const falco_configuration>& config)
-{
-	if (!config->m_metrics_enabled)
-	{
-		return  falco::app::run_result::ok();
-	}
-
-	/* Enforce minimum bound of 100ms. */
-	if(config->m_metrics_interval < 100)
-	{
-		return falco::app::run_result::fatal("Metrics interval must have a minimum value of 100ms and reflect a Prometheus compliant time duration format: https://prometheus.io/docs/prometheus/latest/querying/basics/#time-durations. ");
-	}
-
-	if(std::all_of(config->m_metrics_interval_str.begin(), config->m_metrics_interval_str.end(), ::isdigit))
-	{
-		return falco::app::run_result::fatal("Metrics interval was passed as numeric value without Prometheus time unit. Please specify a time unit");
-	}
-
-	if (config->m_metrics_enabled && !sw->has_output())
-	{
-		return falco::app::run_result::fatal("Metrics are enabled with no output configured. Please enable at least one output channel");
-	}
-
-	falco_logger::log(falco_logger::level::INFO, "Setting metrics interval to " + config->m_metrics_interval_str + ", equivalent to " + std::to_string(config->m_metrics_interval) + " (ms)\n");
-
-	auto res = falco::app::run_result::ok();
-	res.success = stats_writer::init_ticker(config->m_metrics_interval, res.errstr);
-	res.proceed = res.success;
-	return res;
-}
-
 falco::app::run_result falco::app::actions::process_events(falco::app::state& s)
 {
 	// Notify engine that we finished loading and enabling all rules
@@ -439,12 +406,6 @@ falco::app::run_result falco::app::actions::process_events(falco::app::state& s)
 	// todo!: Why do we need to initialize the stats_writer if the metrics are not enabled?
 	// Initialize stats writer
 	auto statsw = std::make_shared<stats_writer>(s.outputs, s.config);
-	auto res = init_stats_writer(statsw, s.config);
-
-	if (!res.success)
-	{
-		return res;
-	}
 
 	// Start processing events
 	bool termination_forced = false;

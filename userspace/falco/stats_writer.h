@@ -101,14 +101,6 @@ public:
 	stats_writer(const std::shared_ptr<falco_outputs>& outputs,
 		const std::shared_ptr<const falco_configuration>& config);
 
-	/*!
-		\brief Returns true if the writer is configured with a valid output.
-	*/
-	inline bool has_output() const
-	{
-		// If the metrics are enabled we must have at least one valid output otherwise we throw an exception
-		return m_config->m_metrics_enabled;
-	}
 
 	/*!
 		\brief Initializes the ticker with a given interval period defined

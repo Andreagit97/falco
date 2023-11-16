@@ -176,26 +176,41 @@ stats_writer::stats_writer(
 		return;
 	}
 
+	// Check if some requirements are satisfied
+
+	// 1. Enforce minimum bound of 100ms.
+	if(m_config->m_metrics_interval < 100)
+	{
+		throw falco_exception("Metrics interval must have a minimum value of 100ms and reflect a Prometheus compliant time duration format: https://prometheus.io/docs/prometheus/latest/querying/basics/#time-durations.");
+	}	
+
+	// 2. Check the presence of Prometheus time unit
+	if(std::all_of(m_config->m_metrics_interval_str.begin(), m_config->m_metrics_interval_str.end(), ::isdigit))
+	{
+		throw falco_exception("Metrics interval was passed as numeric value without Prometheus time unit. Please specify a time unit");
+	}
+
+	// 3. Check that at least one output is enabled
 	uint8_t enabled_outputs = 0;
 
 	// File output
 	if(!m_config->m_metrics_output_file.empty())
 	{
 		m_file_output.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-		m_file_output.open(config->m_metrics_output_file, std::ios_base::app);
+		m_file_output.open(m_config->m_metrics_output_file, std::ios_base::app);
 		enabled_outputs++;
 	}
 
 	// Rule output
-	if(config->m_metrics_stats_rule_enabled)
+	if(m_config->m_metrics_stats_rule_enabled)
 	{
 		enabled_outputs++;
 	}
 
 	// At least one output should be enabled
-	if(enabled_outputs<1)
+	if(enabled_outputs < 1)
 	{
-		throw falco_exception("If you enable metrics you need to chose at least one output method between (file output,rule output)");
+		throw falco_exception("Metrics are enabled with no output configured. Please enable at least one output channel");
 	}
 
 	/* m_outputs should always be initialized because we use it
@@ -205,9 +220,17 @@ stats_writer::stats_writer(
 
 #ifndef __EMSCRIPTEN__
 	// Adopt capacity for completeness, even if it's likely not relevant
-	m_queue.set_capacity(config->m_outputs_queue_capacity);
+	m_queue.set_capacity(m_config->m_outputs_queue_capacity);
 	m_worker = std::thread(&stats_writer::worker, this);
 #endif
+
+	std::string msg_error;
+	if(!stats_writer::init_ticker(m_config->m_metrics_interval, msg_error))
+	{
+		throw falco_exception("Error during ticker initialization: " + msg_error);
+	}
+
+	falco_logger::log(LOG_INFO, "Setting metrics interval to " + m_config->m_metrics_interval_str + ", equivalent to " + std::to_string(m_config->m_metrics_interval) + " (ms)\n");
 }
 
 stats_writer::~stats_writer()
@@ -539,7 +562,7 @@ void stats_writer::collector::get_metrics_output_fields_additional(
 
 void stats_writer::collector::collect(const std::shared_ptr<sinsp>& inspector, const std::string &src, uint64_t num_evts)
 {
-	if (m_writer->has_output())
+	if (m_writer->m_config->m_metrics_enabled)
 	{
 		/* Collect stats / metrics once per ticker period. */
 		auto tick = stats_writer::get_ticker();
